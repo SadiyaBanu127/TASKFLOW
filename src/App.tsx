@@ -19,14 +19,22 @@ function ColumnsIcon({ size = 18 }: { size?: number }) {
   return <span className="columns-glyph" style={{ width: size, height: size }} aria-hidden="true"><i /><i /><i /></span>
 }
 
+function readPreference(key: string, fallback: string) {
+  try { return window.localStorage.getItem(key) ?? fallback } catch { return fallback }
+}
+
+function savePreference(key: string, value: string) {
+  try { window.localStorage.setItem(key, value) } catch { /* Storage can be unavailable in private or restricted contexts. */ }
+}
+
 function App() {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem('taskflow-sidebar-collapsed') === 'true')
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => readPreference('taskflow-sidebar-collapsed', 'false') === 'true')
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
-  const [theme, setTheme] = useState(() => localStorage.getItem('taskflow-theme') ?? 'light')
+  const [theme, setTheme] = useState(() => readPreference('taskflow-theme', 'light'))
   const [period, setPeriod] = useState<'This week' | 'This month'>('This week')
   const location = useLocation()
   const navigate = useNavigate()
@@ -34,11 +42,11 @@ function App() {
   const isDashboard = location.pathname === '/' || location.pathname === '/dashboard'
 
   useEffect(() => {
-    localStorage.setItem('taskflow-sidebar-collapsed', String(sidebarCollapsed))
+    savePreference('taskflow-sidebar-collapsed', String(sidebarCollapsed))
   }, [sidebarCollapsed])
 
   useEffect(() => {
-    localStorage.setItem('taskflow-theme', theme)
+    savePreference('taskflow-theme', theme)
     document.documentElement.dataset.theme = theme
   }, [theme])
 
@@ -52,6 +60,7 @@ function App() {
         setSearchOpen(false)
         setNotificationsOpen(false)
         setProfileOpen(false)
+        setMobileOpen(false)
       }
     }
     window.addEventListener('keydown', handleShortcut)
